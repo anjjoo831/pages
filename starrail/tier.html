@@ -223,6 +223,7 @@
             align-items: flex-start;
             min-height: 120px;
             transition: all 0.3s;
+            position: relative;
         }
 
         .tier-content.dragover {
@@ -239,6 +240,29 @@
             justify-content: center;
             width: 100%;
             height: 100%;
+        }
+
+        /* 드롭 인디케이터 */
+        .drop-indicator {
+            position: absolute;
+            width: 3px;
+            height: 90px;
+            background: #ffd700;
+            border-radius: 2px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+            z-index: 10;
+        }
+
+        .drop-indicator.active {
+            opacity: 1;
+        }
+
+        .character-card.drag-placeholder {
+            opacity: 0.3;
+            transform: scale(0.9);
+            border: 2px dashed #ffd700;
         }
 
         /* 캐릭터 카드 */
@@ -1089,6 +1113,7 @@
 
         let currentMode = 'general';
         let currentTiers = {};
+        let currentTierOrders = {};
 
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
@@ -1145,9 +1170,33 @@
                 const container = document.querySelector(`[data-tier="${tier}"]`);
                 container.innerHTML = '';
                 
-                const charactersInTier = characters.filter(char => 
+                let charactersInTier = characters.filter(char => 
                     currentTiers[char.id] && currentTiers[char.id][currentMode] === tier
                 );
+
+                // 저장된 순서가 있으면 그 순서대로 정렬
+                if (currentTierOrders[currentMode] && currentTierOrders[currentMode][tier]) {
+                    const savedOrder = currentTierOrders[currentMode][tier];
+                    const orderedChars = [];
+                    const unorderedChars = [];
+                    
+                    // 저장된 순서대로 먼저 배치
+                    savedOrder.forEach(charId => {
+                        const char = charactersInTier.find(c => c.id === charId);
+                        if (char) {
+                            orderedChars.push(char);
+                        }
+                    });
+                    
+                    // 저장된 순서에 없는 캐릭터들은 뒤에 배치
+                    charactersInTier.forEach(char => {
+                        if (!savedOrder.includes(char.id)) {
+                            unorderedChars.push(char);
+                        }
+                    });
+                    
+                    charactersInTier = [...orderedChars, ...unorderedChars];
+                }
 
                 charactersInTier.forEach(char => {
                     const card = createCharacterCard(char);
@@ -1230,18 +1279,32 @@
             return card;
         }
 
+        // 전역 변수
+        let draggedCharacterId = null;
+        let draggedElement = null;
+        let currentDropTarget = null;
+        let insertPosition = -1;
+
         // 드래그 앤 드롭 처리
         function allowDrop(ev) {
             ev.preventDefault();
-            ev.currentTarget.classList.add('dragover');
+            const tierContent = ev.currentTarget;
+            tierContent.classList.add('dragover');
+            
+            // 드롭 위치 계산
+            updateDropIndicator(ev, tierContent);
         }
 
         function drop(ev) {
             ev.preventDefault();
-            ev.currentTarget.classList.remove('dragover');
+            const tierContent = ev.currentTarget;
+            tierContent.classList.remove('dragover');
             
             const characterId = ev.dataTransfer.getData('text/plain');
-            const tier = ev.currentTarget.dataset.tier;
+            const tier = tierContent.dataset.tier;
+            
+            // 드롭 인디케이터 숨기기
+            hideDropIndicator();
             
             // 캐릭터 티어 업데이트
             if (!currentTiers[characterId]) {
@@ -1249,8 +1312,82 @@
             }
             currentTiers[characterId][currentMode] = tier;
             
+            // 같은 티어 내에서의 순서 저장
+            if (insertPosition >= 0) {
+                saveTierOrder(tier, characterId, insertPosition);
+            }
+            
             updateDisplay();
             saveToStorage();
+        }
+
+        function updateDropIndicator(ev, tierContent) {
+            const rect = tierContent.getBoundingClientRect();
+            const x = ev.clientX - rect.left;
+            const y = ev.clientY - rect.top;
+            
+            const cards = Array.from(tierContent.querySelectorAll('.character-card:not(.dragging)'));
+            let insertIndex = cards.length;
+            let indicatorX = rect.width - 30;
+            
+            for (let i = 0; i < cards.length; i++) {
+                const cardRect = cards[i].getBoundingClientRect();
+                const cardX = cardRect.left - rect.left;
+                const cardY = cardRect.top - rect.top;
+                
+                // 카드의 중앙을 기준으로 삽입 위치 결정
+                if (x < cardX + cardRect.width / 2 && 
+                    y >= cardY && y <= cardY + cardRect.height) {
+                    insertIndex = i;
+                    indicatorX = cardX - 5;
+                    break;
+                }
+            }
+            
+            insertPosition = insertIndex;
+            showDropIndicator(tierContent, indicatorX);
+        }
+
+        function showDropIndicator(tierContent, x) {
+            let indicator = tierContent.querySelector('.drop-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.className = 'drop-indicator';
+                tierContent.appendChild(indicator);
+            }
+            
+            indicator.style.left = x + 'px';
+            indicator.style.top = '15px';
+            indicator.classList.add('active');
+        }
+
+        function hideDropIndicator() {
+            document.querySelectorAll('.drop-indicator').forEach(indicator => {
+                indicator.classList.remove('active');
+            });
+        }
+
+        // 티어 내 캐릭터 순서 저장
+        function saveTierOrder(tier, characterId, position) {
+            if (!currentTierOrders) {
+                currentTierOrders = {};
+            }
+            if (!currentTierOrders[currentMode]) {
+                currentTierOrders[currentMode] = {};
+            }
+            if (!currentTierOrders[currentMode][tier]) {
+                currentTierOrders[currentMode][tier] = [];
+            }
+            
+            const orderArray = currentTierOrders[currentMode][tier];
+            // 기존 위치에서 제거
+            const existingIndex = orderArray.indexOf(characterId);
+            if (existingIndex > -1) {
+                orderArray.splice(existingIndex, 1);
+            }
+            
+            // 새 위치에 삽입
+            orderArray.splice(position, 0, characterId);
         }
 
         // 드래그오버 종료 처리
@@ -1258,6 +1395,7 @@
             content.addEventListener('dragleave', function(e) {
                 if (!this.contains(e.relatedTarget)) {
                     this.classList.remove('dragover');
+                    hideDropIndicator();
                 }
             });
         });
@@ -1291,8 +1429,9 @@
         function saveTierList() {
             const data = {
                 currentTiers: currentTiers,
+                currentTierOrders: currentTierOrders,
                 timestamp: new Date().toISOString(),
-                version: '1.0'
+                version: '2.0'
             };
             
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1318,6 +1457,10 @@
                     const data = JSON.parse(e.target.result);
                     if (data.currentTiers) {
                         currentTiers = data.currentTiers;
+                        // 순서 정보가 있으면 불러오기
+                        if (data.currentTierOrders) {
+                            currentTierOrders = data.currentTierOrders;
+                        }
                         updateDisplay();
                         saveToStorage();
                         alert('티어표를 성공적으로 불러왔습니다!');
@@ -1334,6 +1477,7 @@
 
         function resetTierList() {
             if (confirm('티어표를 초기화하시겠습니까? 현재 설정이 모두 사라집니다.')) {
+                currentTierOrders = {};
                 initializeTierList();
                 saveToStorage();
             }
@@ -1348,6 +1492,7 @@
         function saveToStorage() {
             localStorage.setItem('hsr_tierlist', JSON.stringify({
                 currentTiers: currentTiers,
+                currentTierOrders: currentTierOrders,
                 currentMode: currentMode
             }));
         }
@@ -1359,6 +1504,9 @@
                     const data = JSON.parse(saved);
                     if (data.currentTiers) {
                         currentTiers = data.currentTiers;
+                    }
+                    if (data.currentTierOrders) {
+                        currentTierOrders = data.currentTierOrders;
                     }
                     if (data.currentMode) {
                         setMode(data.currentMode);
