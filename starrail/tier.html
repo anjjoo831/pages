@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>붕괴: 스타레일 캐릭터 티어표</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -169,7 +170,10 @@
             border-radius: 15px;
             padding: 30px;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
         }
+
+
 
         .tier-row {
             display: flex;
@@ -224,6 +228,7 @@
             min-height: 120px;
             transition: all 0.3s;
             position: relative;
+            z-index: 1;
         }
 
         .tier-content.dragover {
@@ -265,10 +270,221 @@
             border: 2px dashed #ffd700;
         }
 
+        /* 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(26, 35, 126, 0.95), rgba(21, 101, 192, 0.95));
+            margin: 2% auto;
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #ffd700;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close:hover {
+            color: #ffd700;
+        }
+
+        .modal-body {
+            padding: 25px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label,
+        .form-group .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #ffd700;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .tier-inputs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .tier-input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tier-input-group label {
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #ffd700;
+        }
+
+        .tier-input-group select {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-actions button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .form-actions button[type="button"] {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .form-actions button[type="button"]:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .form-actions button[type="submit"] {
+            background: #ffd700;
+            color: #000000;
+        }
+
+        .form-actions button[type="submit"]:hover {
+            background: #ffed4e;
+            transform: translateY(-1px);
+        }
+
+        /* 캐릭터 툴팁 */
+        .character-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: #ffffff;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            z-index: 1000;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(-5px);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .character-tooltip.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .character-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .tooltip-element {
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        .tooltip-path {
+            color: #64b5f6;
+            font-weight: 600;
+        }
+
         /* 캐릭터 카드 */
         .character-card {
             width: 80px;
-            height: 90px;
+            height: 95px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             overflow: hidden;
@@ -276,6 +492,9 @@
             transition: all 0.3s;
             border: 2px solid transparent;
             position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
         }
 
         .character-card:hover {
@@ -291,7 +510,7 @@
 
         .character-image {
             width: 100%;
-            height: 70px;
+            height: 75px;
             position: relative;
             border-radius: 5px 5px 0 0;
             background-size: cover;
@@ -301,6 +520,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex: 1;
         }
 
         .character-image.loading {
@@ -355,14 +575,19 @@
         }
 
         .character-name {
-            padding: 5px;
-            font-size: 11px;
+            padding: 3px 5px;
+            font-size: 10px;
             text-align: center;
             font-weight: bold;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 18px;
+            line-height: 1.2;
         }
 
         /* 캐릭터 풀 */
@@ -463,11 +688,11 @@
 
             .character-card {
                 width: 70px;
-                height: 80px;
+                height: 85px;
             }
 
             .character-image {
-                height: 60px;
+                height: 65px;
             }
         }
 
@@ -495,18 +720,7 @@
     </style>
 </head>
 <body>
-    <!-- 헤더 -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">🌟 HSR Tier</div>
-            <nav class="nav-menu">
-                <a href="#" class="nav-item active">티어표</a>
-                <a href="#" class="nav-item">캐릭터 정보</a>
-                <a href="#" class="nav-item">빌드 가이드</a>
-                <a href="#" class="nav-item">최신 소식</a>
-            </nav>
-        </div>
-    </header>
+    
 
     <!-- 메인 컨테이너 -->
     <div class="container">
@@ -546,6 +760,7 @@
                         <option value="Nihility">허무</option>
                         <option value="Preservation">존호</option>
                         <option value="Abundance">풍요</option>
+                        <option value="Memories">기억</option>
                     </select>
                 </div>
             </div>
@@ -583,10 +798,133 @@
 
         <!-- 액션 버튼 -->
         <div class="action-buttons">
+            <button class="btn btn-primary" onclick="openAddCharacterModal()">➕ 새 캐릭터 추가</button>
             <button class="btn btn-primary" onclick="saveTierList()">💾 티어표 저장</button>
             <button class="btn btn-secondary" onclick="loadTierList()">📂 티어표 불러오기</button>
             <button class="btn btn-secondary" onclick="resetTierList()">🔄 초기화</button>
-            <button class="btn btn-secondary" onclick="exportImage()">📸 이미지로 내보내기</button>
+            <button class="btn btn-secondary" onclick="exportImage(this)">📸 이미지로 내보내기</button>
+        </div>
+
+        <!-- 새 캐릭터 추가 모달 -->
+        <div id="addCharacterModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>새 캐릭터 추가</h2>
+                    <span class="close" onclick="closeAddCharacterModal()" onkeydown="if(event.key==='Enter'||event.key===' ')closeAddCharacterModal()" tabindex="0" role="button" aria-label="모달 닫기">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="addCharacterForm">
+                        <div class="form-group">
+                            <label for="charId">캐릭터 ID:</label>
+                            <input type="text" id="charId" required placeholder="예: kafka">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="charName">한국어 이름:</label>
+                            <input type="text" id="charName" required placeholder="예: 카프카">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="charEnName">영어 이름:</label>
+                            <input type="text" id="charEnName" required placeholder="예: Kafka">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="charRarity">별급:</label>
+                            <select id="charRarity" required>
+                                <option value="">선택하세요</option>
+                                <option value="4">4성</option>
+                                <option value="5">5성</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="charElement">속성:</label>
+                            <select id="charElement" required>
+                                <option value="">선택하세요</option>
+                                <option value="Physical">물리</option>
+                                <option value="Fire">불</option>
+                                <option value="Ice">얼음</option>
+                                <option value="Lightning">번개</option>
+                                <option value="Wind">바람</option>
+                                <option value="Quantum">양자</option>
+                                <option value="Imaginary">허수</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="charPath">운명의 길:</label>
+                            <select id="charPath" required>
+                                <option value="">선택하세요</option>
+                                <option value="Destruction">멸망</option>
+                                <option value="Hunt">수렵</option>
+                                <option value="Erudition">지식</option>
+                                <option value="Harmony">조화</option>
+                                <option value="Nihility">허무</option>
+                                <option value="Preservation">존호</option>
+                                <option value="Abundance">풍요</option>
+                                <option value="Memories">기억</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="charImage">이미지 URL (선택사항):</label>
+                            <input type="url" id="charImage" placeholder="https://...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <span class="form-label">기본 티어 설정:</span>
+                            <div class="tier-inputs">
+                                <div class="tier-input-group">
+                                    <label for="tierGeneral">일반:</label>
+                                    <select id="tierGeneral">
+                                        <option value="S">S</option>
+                                        <option value="A">A</option>
+                                        <option value="B" selected>B</option>
+                                        <option value="C">C</option>
+                                        <option value="D">D</option>
+                                    </select>
+                                </div>
+                                <div class="tier-input-group">
+                                    <label for="tierChaos">혼돈의 기억:</label>
+                                    <select id="tierChaos">
+                                        <option value="S">S</option>
+                                        <option value="A">A</option>
+                                        <option value="B" selected>B</option>
+                                        <option value="C">C</option>
+                                        <option value="D">D</option>
+                                    </select>
+                                </div>
+                                <div class="tier-input-group">
+                                    <label for="tierPure">순수 허구:</label>
+                                    <select id="tierPure">
+                                        <option value="S">S</option>
+                                        <option value="A">A</option>
+                                        <option value="B" selected>B</option>
+                                        <option value="C">C</option>
+                                        <option value="D">D</option>
+                                    </select>
+                                </div>
+                                <div class="tier-input-group">
+                                    <label for="tierApocalyptic">종말 그림자:</label>
+                                    <select id="tierApocalyptic">
+                                        <option value="S">S</option>
+                                        <option value="A">A</option>
+                                        <option value="B" selected>B</option>
+                                        <option value="C">C</option>
+                                        <option value="D">D</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" onclick="closeAddCharacterModal()">취소</button>
+                            <button type="submit">추가</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <!-- 숨겨진 파일 입력 -->
@@ -1270,10 +1608,18 @@
             card.addEventListener('dragstart', function(e) {
                 e.dataTransfer.setData('text/plain', char.id);
                 this.classList.add('dragging');
+                hideTooltip(); // 드래그 시작 시 툴팁 숨김
             });
 
             card.addEventListener('dragend', function() {
                 this.classList.remove('dragging');
+            });
+
+            // 캐릭터 클릭 시 툴팁 표시
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                showCharacterTooltip(char, e.pageX, e.pageY);
             });
 
             return card;
@@ -1483,9 +1829,89 @@
             }
         }
 
-        function exportImage() {
-            // 실제 구현에서는 html2canvas 등의 라이브러리를 사용
-            alert('이미지 내보내기 기능은 개발 중입니다.');
+        async function exportImage(buttonElement) {
+            let originalText = '';
+            try {
+                // 로딩 메시지 표시
+                if (buttonElement) {
+                    originalText = buttonElement.textContent;
+                    buttonElement.textContent = '📸 이미지 생성 중...';
+                    buttonElement.disabled = true;
+                }
+
+                // 티어 보드 영역만 캡처
+                const tierBoard = document.querySelector('.tier-board');
+                if (!tierBoard) {
+                    throw new Error('티어 보드를 찾을 수 없습니다.');
+                }
+                
+                // 잠시 대기하여 모든 이미지가 로드되도록 함
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // 단순한 옵션으로 설정
+                const options = {
+                    backgroundColor: '#1a237e',
+                    scale: 1,
+                    useCORS: false,
+                    allowTaint: true,
+                    logging: false,
+                    width: tierBoard.offsetWidth,
+                    height: tierBoard.offsetHeight,
+                    onclone: function(clonedDoc) {
+                        try {
+                            // 복제된 문서에서 스타일 간소화
+                            const clonedTierBoard = clonedDoc.querySelector('.tier-board');
+                            if (clonedTierBoard) {
+                                clonedTierBoard.style.background = '#1a237e';
+                            }
+                            
+                            // 툴팁 제거
+                            const tooltips = clonedDoc.querySelectorAll('.character-tooltip');
+                            tooltips.forEach(tooltip => tooltip.remove());
+                            
+                        } catch (cloneError) {
+                            console.warn('Clone 처리 중 오류:', cloneError);
+                        }
+                    }
+                };
+
+                console.log('캡처 시작...');
+                
+                // html2canvas로 캡처
+                const canvas = await html2canvas(tierBoard, options);
+                
+                if (!canvas) {
+                    throw new Error('캔버스 생성에 실패했습니다.');
+                }
+                
+                console.log('캡처 완료, 이미지 생성 중...');
+                
+                // 캔버스를 이미지로 변환
+                const dataURL = canvas.toDataURL('image/png', 0.9);
+                
+                // 다운로드 링크 생성
+                const link = document.createElement('a');
+                link.download = `hsr_tierlist_${new Date().toISOString().split('T')[0]}.png`;
+                link.href = dataURL;
+                
+                // 자동 다운로드 실행
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // 성공 메시지
+                alert('티어표 이미지가 성공적으로 저장되었습니다!');
+                
+            } catch (error) {
+                console.error('이미지 내보내기 실패:', error);
+                alert(`이미지 내보내기에 실패했습니다: ${error.message}`);
+            } finally {
+                // 버튼 텍스트 복원
+                if (buttonElement) {
+                    buttonElement.textContent = originalText;
+                    buttonElement.disabled = false;
+                }
+            }
         }
 
         // 로컬 스토리지 관리
@@ -1517,6 +1943,169 @@
                 }
             }
         }
+
+        // 새 캐릭터 추가 모달 관리
+        function openAddCharacterModal() {
+            document.getElementById('addCharacterModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAddCharacterModal() {
+            document.getElementById('addCharacterModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            // 폼 리셋
+            document.getElementById('addCharacterForm').reset();
+        }
+
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('addCharacterModal');
+            if (event.target === modal) {
+                closeAddCharacterModal();
+            }
+        }
+
+        // 새 캐릭터 추가 폼 처리
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('addCharacterForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addNewCharacter();
+            });
+        });
+
+        function addNewCharacter() {
+            // 폼 데이터 수집
+            const formData = {
+                id: document.getElementById('charId').value.trim(),
+                name: document.getElementById('charName').value.trim(),
+                enName: document.getElementById('charEnName').value.trim(),
+                rarity: parseInt(document.getElementById('charRarity').value),
+                element: document.getElementById('charElement').value,
+                path: document.getElementById('charPath').value,
+                image: document.getElementById('charImage').value.trim(),
+                defaultTiers: {
+                    general: document.getElementById('tierGeneral').value,
+                    chaos: document.getElementById('tierChaos').value,
+                    pure: document.getElementById('tierPure').value,
+                    apocalyptic: document.getElementById('tierApocalyptic').value
+                }
+            };
+
+            // 유효성 검사
+            if (!formData.id || !formData.name || !formData.enName || !formData.rarity || 
+                !formData.element || !formData.path) {
+                alert('필수 항목을 모두 입력해주세요.');
+                return;
+            }
+
+            // ID 중복 검사
+            if (characters.find(char => char.id === formData.id)) {
+                alert('이미 존재하는 캐릭터 ID입니다.');
+                return;
+            }
+
+            // 캐릭터 추가
+            characters.push(formData);
+            
+            // 화면 업데이트
+            updateDisplay();
+            
+            // 모달 닫기
+            closeAddCharacterModal();
+            
+            alert(`${formData.name} 캐릭터가 성공적으로 추가되었습니다!`);
+        }
+
+        // 캐릭터 툴팁 관련 함수들
+        let currentTooltip = null;
+
+        function showCharacterTooltip(character, x, y) {
+            hideTooltip(); // 기존 툴팁 숨김
+            
+            // 한국어로 속성과 운명의 길 변환
+            const elementKR = {
+                'Physical': '물리',
+                'Fire': '불',
+                'Ice': '얼음',
+                'Lightning': '번개',
+                'Wind': '바람',
+                'Quantum': '양자',
+                'Imaginary': '허수'
+            };
+            
+            const pathKR = {
+                'Destruction': '멸망',
+                'Hunt': '수렵',
+                'Erudition': '지식',
+                'Harmony': '조화',
+                'Nihility': '허무',
+                'Preservation': '존호',
+                'Abundance': '풍요',
+                'Memories': '기억'
+            };
+
+            // 툴팁 생성
+            const tooltip = document.createElement('div');
+            tooltip.className = 'character-tooltip';
+            tooltip.innerHTML = `
+                <div><strong>${character.name}</strong> (${character.enName})</div>
+                <div>속성: <span class="tooltip-element">${elementKR[character.element] || character.element}</span></div>
+                <div>운명: <span class="tooltip-path">${pathKR[character.path] || character.path}</span></div>
+                <div>${'★'.repeat(character.rarity)}성</div>
+            `;
+
+            // body에 추가
+            document.body.appendChild(tooltip);
+            currentTooltip = tooltip;
+
+            // 위치 계산 및 설정
+            const rect = tooltip.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            let left = x - rect.width / 2;
+            let top = y - rect.height - 15;
+
+            // 화면 경계 체크
+            if (left < 10) left = 10;
+            if (left + rect.width > viewportWidth - 10) left = viewportWidth - rect.width - 10;
+            if (top < 10) top = y + 15;
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+
+            // 애니메이션으로 표시
+            setTimeout(() => {
+                tooltip.classList.add('show');
+            }, 10);
+
+            // 3초 후 자동 숨김
+            setTimeout(() => {
+                hideTooltip();
+            }, 3000);
+        }
+
+        function hideTooltip() {
+            if (currentTooltip) {
+                currentTooltip.classList.remove('show');
+                setTimeout(() => {
+                    if (currentTooltip && currentTooltip.parentNode) {
+                        currentTooltip.parentNode.removeChild(currentTooltip);
+                    }
+                    currentTooltip = null;
+                }, 200);
+            }
+        }
+
+        // 문서 클릭 시 툴팁 숨김
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.character-card')) {
+                hideTooltip();
+            }
+        });
+
+        // 스크롤 시 툴팁 숨김
+        window.addEventListener('scroll', hideTooltip);
     </script>
 </body>
 </html>
