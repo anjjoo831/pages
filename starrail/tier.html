@@ -270,29 +270,53 @@
             height: 70px;
             position: relative;
             border-radius: 5px 5px 0 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .character-image.loading {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #ffffff;
             font-weight: bold;
             font-size: 12px;
             text-align: center;
-            overflow: hidden;
         }
 
-        .character-image.rarity-5 {
+        .character-image.rarity-5.fallback {
             background: linear-gradient(135deg, #ffd700, #ffed4e);
             color: #000000;
+            font-weight: bold;
+            font-size: 12px;
         }
 
-        .character-image.rarity-4 {
+        .character-image.rarity-4.fallback {
             background: linear-gradient(135deg, #a855f7, #c084fc);
             color: #ffffff;
+            font-weight: bold;
+            font-size: 12px;
         }
 
         .character-image .character-initial {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 900;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+            z-index: 2;
+        }
+
+        .character-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 70%, rgba(255, 255, 255, 0.1));
+            pointer-events: none;
         }
 
         .character-rarity {
@@ -556,6 +580,7 @@
                 rarity: 5,
                 element: "Lightning",
                 path: "Nihility",
+                image: "https://i.namu.wiki/i/fM641qp4V6eSvvRS00uS5iGwIb6D2j6QhAxDuSzifMv1uim177GJcttUpxbSyoxjYX-Bl07GNgYSqzt_VIkkQQ.webp",
                 defaultTiers: { general: "S", chaos: "A", pure: "S", apocalyptic: "A" }
             },
             {
@@ -565,6 +590,7 @@
                 rarity: 5,
                 element: "Quantum",
                 path: "Hunt",
+                image: "https://i.namu.wiki/i/WdbRue-lU8k8dQaXmI0FYy3LocXmqUEBiEvfvNTRFynPwI4qlVKvMUski82oVBS0m9TZFcTzIxwdKee422_OBw.webp",
                 defaultTiers: { general: "S", chaos: "S", pure: "A", apocalyptic: "S" }
             },
             {
@@ -574,6 +600,7 @@
                 rarity: 5,
                 element: "Ice",
                 path: "Destruction",
+                image: "https://i.namu.wiki/i/SW2rbu7qc5QtCR6XE1q80AeE7C39QeRgmIC9Rt6OcFQh3-zhTcP1og1NYWukMvMqIo9JEyd8tevKxYtKQdo6PQ.webp",
                 defaultTiers: { general: "S", chaos: "S", pure: "A", apocalyptic: "S" }
             },
             {
@@ -583,6 +610,7 @@
                 rarity: 5,
                 element: "Imaginary",
                 path: "Destruction",
+                image: "https://i.namu.wiki/i/bPkjckUIS829XfOQfgFGhoT4LH-G_YqkVt2D9QbVciMj3tVXl_1QeC_wPCkJb4FI3oxYJbhoNvXccZri7V0hoA.webp",
                 defaultTiers: { general: "S", chaos: "S", pure: "A", apocalyptic: "A" }
             },
             {
@@ -592,6 +620,7 @@
                 rarity: 5,
                 element: "Wind",
                 path: "Harmony",
+                image: "https://i.namu.wiki/i/RUwehd_8P_bmOD01LUfSKBAhdi-WcbvrNl8etIengFOFEoveDugY_U50e6L39hijLzCmXOn9XrlJaxU1PD225A.webp",
                 defaultTiers: { general: "S", chaos: "S", pure: "S", apocalyptic: "S" }
             },
             {
@@ -601,15 +630,17 @@
                 rarity: 5,
                 element: "Quantum",
                 path: "Preservation",
+                image: "https://i.namu.wiki/i/EaW-dJGo9A_fjeU6loBjQ9plSSrUDG_4L1NKsYWs0Y9lXJ_JqYD_0CBtqrwi--CPb9oVyy_5wcAEzvP8pYlT3w.webp",
                 defaultTiers: { general: "S", chaos: "S", pure: "A", apocalyptic: "A" }
             },
             {
                 id: "huohuo",
-                name: "훠훠",
+                name: "곽향",
                 enName: "Huohuo",
                 rarity: 5,
                 element: "Wind",
                 path: "Abundance",
+                image: "https://i.namu.wiki/i/LqLnXvBQ15oJV0Tb0pPRb6lYbpA7l4zE1dIeyVOEjuNm6sY3QwPMph84h9DJPN-THewHMuHdo9pA35-2mW6Gvg.webp",
                 defaultTiers: { general: "S", chaos: "A", pure: "S", apocalyptic: "S" }
             },
             {
@@ -619,24 +650,27 @@
                 rarity: 5,
                 element: "Fire",
                 path: "Hunt",
+                image: "https://i.namu.wiki/i/nBfBzYKZYUgfPsWbjwdNj-6iqZuAVGDY_MguV4YTdbZmC2g5J96wEwXfIOLjwFyf3wIDPJQUlDIHYQuRVWzxtQ.webp",
                 defaultTiers: { general: "A", chaos: "A", pure: "S", apocalyptic: "A" }
             },
             {
                 id: "aventurine",
-                name: "아벤츄린",
+                name: "어벤츄린",
                 enName: "Aventurine",
                 rarity: 5,
                 element: "Imaginary",
                 path: "Preservation",
+                image: "https://i.namu.wiki/i/DRb6dxzr9SJ_Q0HG2oynLBgCAxry04F1ZLMcxe1USpNl3mWJAE2fD6VWsTBRRj0x1b8I2WQuc7IxQ3HbTnr0gA.webp",
                 defaultTiers: { general: "A", chaos: "A", pure: "S", apocalyptic: "A" }
             },
             {
                 id: "luocha",
-                name: "라차",
+                name: "나찰",
                 enName: "Luocha",
                 rarity: 5,
                 element: "Imaginary",
                 path: "Abundance",
+                image: "https://i.namu.wiki/i/qANZZcdNok_lZcGWU-blAqvV00vwUcOCK8ttBjekpbfpQ_-Yr5SCiaB5sx9GDAbQXoevj2xY2ACQc22IY58ONRKl8RDlwCI1Zk-MfC5ceevvzIMWnYE2b66pbQjDN81B1Vr9uCsUKZ0l7BCoUDtoCw.webp",
                 defaultTiers: { general: "A", chaos: "S", pure: "A", apocalyptic: "B" }
             },
             {
@@ -727,6 +761,7 @@
                 rarity: 5,
                 element: "Ice",
                 path: "Harmony",
+                image:"https://i.namu.wiki/i/A_1Tqb1D0eUBLFzjKaNcHjvCktKZbT35QJcM-qBxUZcX-K7VeQm9cJW5BLAXG-9ImOxU58v0WzgOfUbLkR2KuQ.webp",
                 defaultTiers: { general: "S", chaos: "S", pure: "S", apocalyptic: "S" }
             },
             {
@@ -740,11 +775,12 @@
             },
             {
                 id: "blackswan",
-                name: "흑조",
+                name: "블랙 스완",
                 enName: "Black Swan",
                 rarity: 5,
                 element: "Wind",
                 path: "Nihility",
+                image: "https://i.namu.wiki/i/rnQPa5Sm50q6GJt6UA_H-wk4_dDNA7T_IADbkiMhqDvLG7cpA_sly-XIgv30vQ0EcvLN2W2ar7UfNOCOUq9_lA.webp",
                 defaultTiers: { general: "A", chaos: "S", pure: "A", apocalyptic: "A" }
             },
             {
@@ -754,6 +790,7 @@
                 rarity: 5,
                 element: "Quantum",
                 path: "Harmony",
+                image:"https://i.namu.wiki/i/XHOB3B1AI3kdgzJdltz7gMrPiDNXsSIIDERWWApaKnJZszhsptAkTHs-M5bV1Lw4upBkv3zRd86OvEKQ_pIEKg.webp",
                 defaultTiers: { general: "S", chaos: "S", pure: "S", apocalyptic: "S" }
             },
             {
@@ -763,6 +800,7 @@
                 rarity: 5,
                 element: "Lightning",
                 path: "Nihility",
+                image:"https://i.namu.wiki/i/2Qxekiw0b-CzIeu8yeeRz2UoRi-qxCg80BjzR1Va4V0sLIVq6QdlH7Bk4c5hNEz5osEzuLMEQairCSy7UBSG8Q.webp",
                 defaultTiers: { general: "S", chaos: "S", pure: "S", apocalyptic: "S" }
             },
             {
@@ -772,6 +810,7 @@
                 rarity: 5,
                 element: "Physical",
                 path: "Harmony",
+                image:"https://i.namu.wiki/i/rYfxGKuLJW27D96PRLXOIxTaqC52rZ8uBVnpZx8R2fxbAAEGlisoSAWCYObHidgOA7ckdOnybubmpd1oDTW52g.webp",
                 defaultTiers: { general: "S", chaos: "S", pure: "S", apocalyptic: "S" }
             },
             {
@@ -785,11 +824,12 @@
             },
             {
                 id: "firefly",
-                name: "반딧불이",
+                name: "반디",
                 enName: "Firefly",
                 rarity: 5,
                 element: "Fire",
                 path: "Destruction",
+                image: "https://i.namu.wiki/i/1hkgdZki6QXFXXZemi1b6JdvVoinwnpVEUmsaFi9yGaNoJksEQjw750GVldn2wSIqlM80OTqOZ31rB_RGnhgTg.webp",
                 defaultTiers: { general: "S", chaos: "S", pure: "S", apocalyptic: "S" }
             },
             {
@@ -840,12 +880,13 @@
                 defaultTiers: { general: "C", chaos: "C", pure: "C", apocalyptic: "C" }
             },
             {
-                id: "herta",
-                name: "헤르타",
+                id: "The herta",
+                name: "더 헤르타",
                 enName: "Herta",
-                rarity: 4,
+                rarity: 5,
                 element: "Ice",
                 path: "Erudition",
+                image: "https://i.namu.wiki/i/dce08pK_wIdoq_T1PUS_aifGpYAp8mekQrOOSG3NAczTcW2MAcBfbO3AQz51JwOJJriSff0oyBdSFKU17cBN2g.webp",
                 defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
             },
             {
@@ -1111,12 +1152,36 @@
             };
             
             card.innerHTML = `
-                <div class="character-image rarity-${char.rarity}">
+                <div class="character-image loading rarity-${char.rarity}">
                     <div class="character-initial">${getDisplayText(char.name)}</div>
                     <div class="character-rarity">${'★'.repeat(char.rarity)}</div>
                 </div>
                 <div class="character-name">${char.name}</div>
             `;
+
+            const imageElement = card.querySelector('.character-image');
+            
+            // 이미지가 있으면 로드 시도
+            if (char.image) {
+                const img = new Image();
+                img.onload = function() {
+                    imageElement.style.backgroundImage = `url('${char.image}')`;
+                    imageElement.classList.remove('loading');
+                    // 이미지 로드 성공 시 텍스트 숨기기
+                    const textElement = imageElement.querySelector('.character-initial');
+                    if (textElement) textElement.style.display = 'none';
+                };
+                img.onerror = function() {
+                    // 이미지 로드 실패 시 폴백 스타일 적용
+                    imageElement.classList.remove('loading');
+                    imageElement.classList.add('fallback');
+                };
+                img.src = char.image;
+            } else {
+                // 이미지가 없으면 즉시 폴백 스타일 적용
+                imageElement.classList.remove('loading');
+                imageElement.classList.add('fallback');
+            }
 
             // 드래그 이벤트
             card.addEventListener('dragstart', function(e) {
