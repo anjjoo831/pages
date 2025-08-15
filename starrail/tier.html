@@ -268,9 +268,31 @@
         .character-image {
             width: 100%;
             height: 70px;
-            background-size: cover;
-            background-position: center;
             position: relative;
+            border-radius: 5px 5px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .character-image.rarity-5 {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #000000;
+        }
+
+        .character-image.rarity-4 {
+            background: linear-gradient(135deg, #a855f7, #c084fc);
+            color: #ffffff;
+        }
+
+        .character-image .character-initial {
+            font-size: 16px;
+            font-weight: 900;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .character-rarity {
@@ -524,8 +546,9 @@
     </div>
 
     <script>
-        // 스타레일 캐릭터 데이터
+        // 스타레일 캐릭터 데이터 (전체 캐릭터 포함)
         const characters = [
+            // === 5성 캐릭터 ===
             {
                 id: "kafka",
                 name: "카프카",
@@ -533,7 +556,6 @@
                 rarity: 5,
                 element: "Lightning",
                 path: "Nihility",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1005/1005_kafka.png",
                 defaultTiers: { general: "S", chaos: "A", pure: "S", apocalyptic: "A" }
             },
             {
@@ -543,7 +565,6 @@
                 rarity: 5,
                 element: "Quantum",
                 path: "Hunt",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1102/1102_seele.png",
                 defaultTiers: { general: "S", chaos: "S", pure: "A", apocalyptic: "S" }
             },
             {
@@ -553,7 +574,6 @@
                 rarity: 5,
                 element: "Ice",
                 path: "Destruction",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1204/1204_jingliu.png",
                 defaultTiers: { general: "S", chaos: "S", pure: "A", apocalyptic: "S" }
             },
             {
@@ -563,7 +583,6 @@
                 rarity: 5,
                 element: "Imaginary",
                 path: "Destruction",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1213/1213_danheng_il.png",
                 defaultTiers: { general: "S", chaos: "S", pure: "A", apocalyptic: "A" }
             },
             {
@@ -573,7 +592,6 @@
                 rarity: 5,
                 element: "Wind",
                 path: "Harmony",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1101/1101_bronya.png",
                 defaultTiers: { general: "S", chaos: "S", pure: "S", apocalyptic: "S" }
             },
             {
@@ -583,7 +601,6 @@
                 rarity: 5,
                 element: "Quantum",
                 path: "Preservation",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1201/1201_fuxuan.png",
                 defaultTiers: { general: "S", chaos: "S", pure: "A", apocalyptic: "A" }
             },
             {
@@ -593,7 +610,6 @@
                 rarity: 5,
                 element: "Wind",
                 path: "Abundance",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1217/1217_huohuo.png",
                 defaultTiers: { general: "S", chaos: "A", pure: "S", apocalyptic: "S" }
             },
             {
@@ -603,7 +619,6 @@
                 rarity: 5,
                 element: "Fire",
                 path: "Hunt",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1218/1218_topaz.png",
                 defaultTiers: { general: "A", chaos: "A", pure: "S", apocalyptic: "A" }
             },
             {
@@ -613,7 +628,6 @@
                 rarity: 5,
                 element: "Imaginary",
                 path: "Preservation",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1304/1304_aventurine.png",
                 defaultTiers: { general: "A", chaos: "A", pure: "S", apocalyptic: "A" }
             },
             {
@@ -623,7 +637,6 @@
                 rarity: 5,
                 element: "Imaginary",
                 path: "Abundance",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1203/1203_luocha.png",
                 defaultTiers: { general: "A", chaos: "S", pure: "A", apocalyptic: "B" }
             },
             {
@@ -633,7 +646,6 @@
                 rarity: 5,
                 element: "Lightning",
                 path: "Abundance",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1211/1211_bailu.png",
                 defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
             },
             {
@@ -643,7 +655,6 @@
                 rarity: 5,
                 element: "Physical",
                 path: "Destruction",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1107/1107_clara.png",
                 defaultTiers: { general: "A", chaos: "B", pure: "A", apocalyptic: "B" }
             },
             {
@@ -653,7 +664,6 @@
                 rarity: 5,
                 element: "Ice",
                 path: "Hunt",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1202/1202_yanqing.png",
                 defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
             },
             {
@@ -663,7 +673,6 @@
                 rarity: 5,
                 element: "Fire",
                 path: "Erudition",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1003/1003_himeko.png",
                 defaultTiers: { general: "A", chaos: "A", pure: "A", apocalyptic: "A" }
             },
             {
@@ -673,8 +682,333 @@
                 rarity: 5,
                 element: "Imaginary",
                 path: "Nihility",
-                image: "https://d2tpbmzklky1cl.cloudfront.net/uploads/character/avatar/1004/1004_welt.png",
                 defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "gepard",
+                name: "제파드",
+                enName: "Gepard",
+                rarity: 5,
+                element: "Ice",
+                path: "Preservation",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "silverwolf",
+                name: "은랑",
+                enName: "Silver Wolf",
+                rarity: 5,
+                element: "Quantum",
+                path: "Nihility",
+                defaultTiers: { general: "A", chaos: "A", pure: "A", apocalyptic: "A" }
+            },
+            {
+                id: "blade",
+                name: "블레이드",
+                enName: "Blade",
+                rarity: 5,
+                element: "Wind",
+                path: "Destruction",
+                defaultTiers: { general: "A", chaos: "A", pure: "A", apocalyptic: "A" }
+            },
+            {
+                id: "argenti",
+                name: "아르겐티",
+                enName: "Argenti",
+                rarity: 5,
+                element: "Physical",
+                path: "Erudition",
+                defaultTiers: { general: "A", chaos: "A", pure: "A", apocalyptic: "A" }
+            },
+            {
+                id: "ruanmei",
+                name: "완매",
+                enName: "Ruan Mei",
+                rarity: 5,
+                element: "Ice",
+                path: "Harmony",
+                defaultTiers: { general: "S", chaos: "S", pure: "S", apocalyptic: "S" }
+            },
+            {
+                id: "drratio",
+                name: "닥터 레이쇼",
+                enName: "Dr. Ratio",
+                rarity: 5,
+                element: "Imaginary",
+                path: "Hunt",
+                defaultTiers: { general: "A", chaos: "A", pure: "A", apocalyptic: "A" }
+            },
+            {
+                id: "blackswan",
+                name: "흑조",
+                enName: "Black Swan",
+                rarity: 5,
+                element: "Wind",
+                path: "Nihility",
+                defaultTiers: { general: "A", chaos: "S", pure: "A", apocalyptic: "A" }
+            },
+            {
+                id: "sparkle",
+                name: "스파클",
+                enName: "Sparkle",
+                rarity: 5,
+                element: "Quantum",
+                path: "Harmony",
+                defaultTiers: { general: "S", chaos: "S", pure: "S", apocalyptic: "S" }
+            },
+            {
+                id: "acheron",
+                name: "아케론",
+                enName: "Acheron",
+                rarity: 5,
+                element: "Lightning",
+                path: "Nihility",
+                defaultTiers: { general: "S", chaos: "S", pure: "S", apocalyptic: "S" }
+            },
+            {
+                id: "robin",
+                name: "로빈",
+                enName: "Robin",
+                rarity: 5,
+                element: "Physical",
+                path: "Harmony",
+                defaultTiers: { general: "S", chaos: "S", pure: "S", apocalyptic: "S" }
+            },
+            {
+                id: "boothill",
+                name: "부트힐",
+                enName: "Boothill",
+                rarity: 5,
+                element: "Physical",
+                path: "Hunt",
+                defaultTiers: { general: "A", chaos: "A", pure: "A", apocalyptic: "A" }
+            },
+            {
+                id: "firefly",
+                name: "반딧불이",
+                enName: "Firefly",
+                rarity: 5,
+                element: "Fire",
+                path: "Destruction",
+                defaultTiers: { general: "S", chaos: "S", pure: "S", apocalyptic: "S" }
+            },
+            {
+                id: "jade",
+                name: "비취",
+                enName: "Jade",
+                rarity: 5,
+                element: "Quantum",
+                path: "Erudition",
+                defaultTiers: { general: "A", chaos: "A", pure: "A", apocalyptic: "A" }
+            },
+
+            // === 4성 캐릭터 ===
+            {
+                id: "march7th",
+                name: "3월 7일",
+                enName: "March 7th",
+                rarity: 4,
+                element: "Ice",
+                path: "Preservation",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "danheng",
+                name: "단항",
+                enName: "Dan Heng",
+                rarity: 4,
+                element: "Wind",
+                path: "Hunt",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "C" }
+            },
+            {
+                id: "asta",
+                name: "아스타",
+                enName: "Asta",
+                rarity: 4,
+                element: "Fire",
+                path: "Harmony",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "arlan",
+                name: "알란",
+                enName: "Arlan",
+                rarity: 4,
+                element: "Lightning",
+                path: "Destruction",
+                defaultTiers: { general: "C", chaos: "C", pure: "C", apocalyptic: "C" }
+            },
+            {
+                id: "herta",
+                name: "헤르타",
+                enName: "Herta",
+                rarity: 4,
+                element: "Ice",
+                path: "Erudition",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "hook",
+                name: "훅",
+                enName: "Hook",
+                rarity: 4,
+                element: "Fire",
+                path: "Destruction",
+                defaultTiers: { general: "C", chaos: "C", pure: "C", apocalyptic: "C" }
+            },
+            {
+                id: "natasha",
+                name: "나타샤",
+                enName: "Natasha",
+                rarity: 4,
+                element: "Physical",
+                path: "Abundance",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "pela",
+                name: "펠라",
+                enName: "Pela",
+                rarity: 4,
+                element: "Ice",
+                path: "Nihility",
+                defaultTiers: { general: "A", chaos: "A", pure: "A", apocalyptic: "A" }
+            },
+            {
+                id: "qingque",
+                name: "청작",
+                enName: "Qingque",
+                rarity: 4,
+                element: "Quantum",
+                path: "Erudition",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "sampo",
+                name: "삼포",
+                enName: "Sampo",
+                rarity: 4,
+                element: "Wind",
+                path: "Nihility",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "serval",
+                name: "세르발",
+                enName: "Serval",
+                rarity: 4,
+                element: "Lightning",
+                path: "Erudition",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "sushang",
+                name: "소상",
+                enName: "Sushang",
+                rarity: 4,
+                element: "Physical",
+                path: "Hunt",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "tingyun",
+                name: "정운",
+                enName: "Tingyun",
+                rarity: 4,
+                element: "Lightning",
+                path: "Harmony",
+                defaultTiers: { general: "A", chaos: "A", pure: "A", apocalyptic: "A" }
+            },
+            {
+                id: "yukong",
+                name: "육공",
+                enName: "Yukong",
+                rarity: 4,
+                element: "Imaginary",
+                path: "Harmony",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "luka",
+                name: "루카",
+                enName: "Luka",
+                rarity: 4,
+                element: "Physical",
+                path: "Nihility",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "lynx",
+                name: "링크",
+                enName: "Lynx",
+                rarity: 4,
+                element: "Quantum",
+                path: "Abundance",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "guinaifen",
+                name: "계나이펜",
+                enName: "Guinaifen",
+                rarity: 4,
+                element: "Fire",
+                path: "Nihility",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "hanya",
+                name: "한야",
+                enName: "Hanya",
+                rarity: 4,
+                element: "Physical",
+                path: "Harmony",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "xueyi",
+                name: "설의",
+                enName: "Xueyi",
+                rarity: 4,
+                element: "Quantum",
+                path: "Destruction",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "misha",
+                name: "미샤",
+                enName: "Misha",
+                rarity: 4,
+                element: "Ice",
+                path: "Destruction",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "gallagher",
+                name: "갤러거",
+                enName: "Gallagher",
+                rarity: 4,
+                element: "Fire",
+                path: "Abundance",
+                defaultTiers: { general: "A", chaos: "A", pure: "A", apocalyptic: "A" }
+            },
+            {
+                id: "moze",
+                name: "모제",
+                enName: "Moze",
+                rarity: 4,
+                element: "Lightning",
+                path: "Hunt",
+                defaultTiers: { general: "B", chaos: "B", pure: "B", apocalyptic: "B" }
+            },
+            {
+                id: "jiaoqiu",
+                name: "교추",
+                enName: "Jiaoqiu",
+                rarity: 5,
+                element: "Fire",
+                path: "Nihility",
+                defaultTiers: { general: "A", chaos: "A", pure: "A", apocalyptic: "A" }
             }
         ];
 
@@ -770,8 +1104,15 @@
             card.draggable = true;
             card.dataset.characterId = char.id;
             
+            // 캐릭터 이름을 축약하여 표시
+            const getDisplayText = (name) => {
+                if (name.length <= 3) return name;
+                return name.substring(0, 2);
+            };
+            
             card.innerHTML = `
-                <div class="character-image" style="background-image: url('${char.image}')">
+                <div class="character-image rarity-${char.rarity}">
+                    <div class="character-initial">${getDisplayText(char.name)}</div>
                     <div class="character-rarity">${'★'.repeat(char.rarity)}</div>
                 </div>
                 <div class="character-name">${char.name}</div>
