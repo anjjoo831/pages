@@ -1,0 +1,595 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+
+/**
+ * Honkai: Star Rail (붕괴: 스타레일) 캐릭터 티어표 & 소개 홈페이지
+ * - 단일 React 컴포넌트로 동작 (Tailwind 사용)
+ * - 기능: 티어 보기, 필터/검색, 상세 보기, 티어 수정, 로컬 저장, JSON 내보내기/불러오기, 다크모드
+ * - 주의: 샘플 데이터의 평점은 예시일 뿐이며, 반드시 본인 기준으로 수정하세요.
+ */
+
+// --------- 샘플 데이터 (임의 등급) ---------
+const SAMPLE_DATA = [
+  {
+    id: "imbilunae",
+    name: "단항·음월(단항-음월)",
+    enName: "Dan Heng • Imbibitor Lunae",
+    rarity: 5,
+    element: "Imaginary",
+    path: "Destruction",
+    description:
+      "강력한 단일/광역 겸용 타격과 추공(추가공격) 연계가 장점인 딜러. 스킬 포인트 관리가 핵심.",
+    image:
+      "https://images.placeholder.tech/seed/hsr-imbilunae/512/288?text=Imbibitor%20Lunae",
+    tiers: { general: "S", chaos: "S", pure: "A" },
+  },
+  {
+    id: "seele",
+    name: "제레",
+    enName: "Seele",
+    rarity: 5,
+    element: "Quantum",
+    path: "Hunt",
+    description:
+      "고속 순환 단일 딜러. 처치 시 추가 행동으로 눈덩이처럼 화력이 커진다.",
+    image: "https://images.placeholder.tech/seed/hsr-seele/512/288?text=Seele",
+    tiers: { general: "S", chaos: "S", pure: "A" },
+  },
+  {
+    id: "kafka",
+    name: "카프카",
+    enName: "Kafka",
+    rarity: 5,
+    element: "Lightning",
+    path: "Nihility",
+    description:
+      "도트(감전) 증폭과 광역 맹공이 강점. 감전 기반 팀의 핵심.",
+    image: "https://images.placeholder.tech/seed/hsr-kafka/512/288?text=Kafka",
+    tiers: { general: "S", chaos: "A", pure: "S" },
+  },
+  {
+    id: "bronya",
+    name: "브로냐",
+    enName: "Bronya",
+    rarity: 5,
+    element: "Wind",
+    path: "Harmony",
+    description:
+      "행동 게이지, 버프, 피해 증폭을 제공하는 최고급 서포터.",
+    image: "https://images.placeholder.tech/seed/hsr-bronya/512/288?text=Bronya",
+    tiers: { general: "S", chaos: "S", pure: "S" },
+  },
+  {
+    id: "huohuo",
+    name: "훠훠",
+    enName: "Huohuo",
+    rarity: 5,
+    element: "Wind",
+    path: "Abundance",
+    description:
+      "치유/해제/에너지 제공을 모두 갖춘 만능 힐러.",
+    image: "https://images.placeholder.tech/seed/hsr-huohuo/512/288?text=Huohuo",
+    tiers: { general: "S", chaos: "A", pure: "S" },
+  },
+  {
+    id: "fuxuan",
+    name: "부현",
+    enName: "Fu Xuan",
+    rarity: 5,
+    element: "Quantum",
+    path: "Preservation",
+    description:
+      "피해 분산과 생존 보조에 뛰어난 탱커. 안정적 진행에 유리.",
+    image: "https://images.placeholder.tech/seed/hsr-fuxuan/512/288?text=Fu%20Xuan",
+    tiers: { general: "S", chaos: "S", pure: "A" },
+  },
+  {
+    id: "aventurine",
+    name: "아벤츄린",
+    enName: "Aventurine",
+    rarity: 5,
+    element: "Imaginary",
+    path: "Preservation",
+    description:
+      "실드/버프/추공 트리거로 공격과 수비의 밸런스가 좋은 서브탱.",
+    image: "https://images.placeholder.tech/seed/hsr-aventurine/512/288?text=Aventurine",
+    tiers: { general: "A", chaos: "A", pure: "S" },
+  },
+  {
+    id: "topaz",
+    name: "토파즈 & 넘버즈",
+    enName: "Topaz & Numby",
+    rarity: 5,
+    element: "Fire",
+    path: "Hunt",
+    description:
+      "추가공격 파티의 코어. 단일 보스전에 강하다.",
+    image: "https://images.placeholder.tech/seed/hsr-topaz/512/288?text=Topaz",
+    tiers: { general: "A", chaos: "A", pure: "S" },
+  },
+];
+
+const ELEMENTS = [
+  "Physical",
+  "Fire",
+  "Ice",
+  "Lightning",
+  "Wind",
+  "Quantum",
+  "Imaginary",
+];
+const PATHS = [
+  "Destruction",
+  "Hunt",
+  "Erudition",
+  "Harmony",
+  "Nihility",
+  "Preservation",
+  "Abundance",
+];
+const TIERS = ["S", "A", "B", "C", "D"]; // 필요시 SS/SSS 추가
+const MODES = [
+  { key: "general", label: "종합" },
+  { key: "chaos", label: "혼돈의 기억" },
+  { key: "pure", label: "순수한 허구" },
+];
+
+function useLocalStorage(key, initial) {
+  const [val, setVal] = useState(() => {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : initial;
+    } catch {
+      return initial;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(val));
+    } catch {}
+  }, [key, val]);
+  return [val, setVal];
+}
+
+export default function HsrTierSite() {
+  const [dark, setDark] = useLocalStorage("hsr.dark", false);
+  const [data, setData] = useLocalStorage("hsr.data", SAMPLE_DATA);
+  const [mode, setMode] = useLocalStorage("hsr.mode", "general");
+  const [q, setQ] = useState("");
+  const [filter, setFilter] = useState({ element: "", path: "", rarity: "" });
+  const [detailId, setDetailId] = useState(null);
+  const fileRef = useRef(null);
+
+  const stats = useMemo(() => {
+    const o = { S: 0, A: 0, B: 0, C: 0, D: 0 };
+    data.forEach((c) => {
+      const t = c.tiers?.[mode] || "D";
+      if (o[t] != null) o[t]++;
+    });
+    return o;
+  }, [data, mode]);
+
+  const filtered = useMemo(() => {
+    return data.filter((c) => {
+      if (q && !`${c.name} ${c.enName}`.toLowerCase().includes(q.toLowerCase()))
+        return false;
+      if (filter.element && c.element !== filter.element) return false;
+      if (filter.path && c.path !== filter.path) return false;
+      if (filter.rarity && String(c.rarity) !== String(filter.rarity)) return false;
+      return true;
+    });
+  }, [data, q, filter]);
+
+  const byTier = useMemo(() => {
+    const groups = Object.fromEntries(TIERS.map((t) => [t, []]));
+    filtered.forEach((c) => {
+      const t = c.tiers?.[mode] || "D";
+      if (!groups[t]) groups[t] = [];
+      groups[t].push(c);
+    });
+    return groups;
+  }, [filtered, mode]);
+
+  const detail = data.find((c) => c.id === detailId) || null;
+
+  function updateCharacter(id, patch) {
+    setData((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  }
+  function setTier(id, tier) {
+    setData((prev) =>
+      prev.map((c) =>
+        c.id === id ? { ...c, tiers: { ...c.tiers, [mode]: tier } } : c
+      )
+    );
+  }
+  function addCharacter() {
+    const newId = "c" + Math.random().toString(36).slice(2, 9);
+    setData((prev) => [
+      ...prev,
+      {
+        id: newId,
+        name: "새 캐릭터",
+        enName: "New Character",
+        rarity: 5,
+        element: ELEMENTS[0],
+        path: PATHS[0],
+        description: "소개를 입력하세요.",
+        image: "https://images.placeholder.tech/seed/hsr-new/512/288?text=HSR",
+        tiers: { general: "B", chaos: "B", pure: "B" },
+      },
+    ]);
+    setDetailId(newId);
+  }
+  function removeCharacter(id) {
+    if (!confirm("정말 삭제할까요?")) return;
+    setData((prev) => prev.filter((c) => c.id !== id));
+    if (detailId === id) setDetailId(null);
+  }
+  function exportJSON() {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `hsr_tiers.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  function importJSON(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const obj = JSON.parse(reader.result);
+        if (!Array.isArray(obj)) throw new Error("Invalid data");
+        // 간단 유효성: 필수 필드 존재 여부
+        if (!obj.every((c) => c.id && c.name && c.tiers))
+          throw new Error("Invalid schema");
+        setData(obj);
+      } catch (e) {
+        alert("불러오기에 실패했어요. JSON 구조를 확인해 주세요.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  return (
+    <div className={dark ? "dark" : ""}>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-amber-50 dark:from-slate-900 dark:via-slate-950 dark:to-stone-900 text-slate-900 dark:text-slate-100">
+        <div className="max-w-7xl mx-auto p-4 md:p-8">
+          <Header dark={dark} setDark={setDark} mode={mode} setMode={setMode} stats={stats} />
+
+          <div className="mt-4 grid grid-cols-1 lg:grid-cols-[260px,1fr,360px] gap-4 items-start">
+            <Sidebar
+              q={q}
+              setQ={setQ}
+              filter={filter}
+              setFilter={setFilter}
+              onAdd={addCharacter}
+              onExport={exportJSON}
+              onImportClick={() => fileRef.current?.click()}
+            />
+
+            <main className="bg-white/70 dark:bg-white/5 rounded-3xl border border-slate-200/60 dark:border-white/10 shadow p-3 md:p-4">
+              <TierBoard groups={byTier} mode={mode} onOpen={setDetailId} onSetTier={setTier} />
+            </main>
+
+            <aside className="bg-white/70 dark:bg-white/5 rounded-3xl border border-slate-200/60 dark:border-white/10 shadow p-3 md:p-4 sticky top-4">
+              <DetailPanel
+                character={detail}
+                onClose={() => setDetailId(null)}
+                onChange={updateCharacter}
+                onRemove={removeCharacter}
+              />
+              <input
+                ref={fileRef}
+                className="hidden"
+                type="file"
+                accept="application/json"
+                onChange={(e) => e.target.files?.[0] && importJSON(e.target.files[0])}
+              />
+            </aside>
+          </div>
+
+          <Footer />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Header({ dark, setDark, mode, setMode, stats }) {
+  return (
+    <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">🚀 HSR 캐릭터 티어표</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400">* 샘플 등급입니다. 직접 조정하고 JSON으로 저장하세요.</p>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 bg-white/80 dark:bg-white/10 border border-slate-200/60 dark:border-white/10 rounded-2xl px-3 py-2">
+          {MODES.map((m) => (
+            <button
+              key={m.key}
+              className={`px-3 py-1 rounded-xl text-sm ${
+                mode === m.key
+                  ? "bg-amber-500 text-white shadow"
+                  : "hover:bg-slate-100 dark:hover:bg-white/10"
+              }`}
+              onClick={() => setMode(m.key)}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => setDark(!dark)}
+          className="rounded-2xl px-4 py-2 shadow bg-black text-white hover:opacity-90"
+        >
+          {dark ? "🌞 라이트" : "🌙 다크"}
+        </button>
+      </div>
+      <div className="grid grid-cols-5 gap-2 text-center mt-2 md:mt-0">
+        {TIERS.map((t) => (
+          <div key={t} className="rounded-xl px-3 py-2 bg-white/80 dark:bg-white/10 border border-slate-200/60 dark:border-white/10">
+            <div className="text-xs text-slate-500">{t}</div>
+            <div className="text-lg font-bold">{stats[t]}</div>
+          </div>
+        ))}
+      </div>
+    </header>
+  );
+}
+
+function Sidebar({ q, setQ, filter, setFilter, onAdd, onExport, onImportClick }) {
+  return (
+    <aside className="bg-white/70 dark:bg-white/5 rounded-3xl border border-slate-200/60 dark:border-white/10 shadow p-3 md:p-4">
+      <h2 className="font-semibold mb-2">🔎 필터/관리</h2>
+      <div className="space-y-2">
+        <input
+          className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-white/80 dark:bg-white/10 px-3 py-2"
+          placeholder="캐릭터 검색 (한글/영문)"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+        <select
+          className="w-full rounded-xl border bg-white/80 dark:bg-white/10 px-3 py-2"
+          value={filter.element}
+          onChange={(e) => setFilter((f) => ({ ...f, element: e.target.value }))}
+        >
+          <option value="">속성 전체</option>
+          {ELEMENTS.map((el) => (
+            <option key={el} value={el}>
+              {el}
+            </option>
+          ))}
+        </select>
+        <select
+          className="w-full rounded-xl border bg-white/80 dark:bg-white/10 px-3 py-2"
+          value={filter.path}
+          onChange={(e) => setFilter((f) => ({ ...f, path: e.target.value }))}
+        >
+          <option value="">운명 전체</option>
+          {PATHS.map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
+        <select
+          className="w-full rounded-xl border bg-white/80 dark:bg-white/10 px-3 py-2"
+          value={filter.rarity}
+          onChange={(e) => setFilter((f) => ({ ...f, rarity: e.target.value }))}
+        >
+          <option value="">희귀도 전체</option>
+          <option value="5">★★★★★ (5성)</option>
+          <option value="4">★★★★ (4성)</option>
+        </select>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button onClick={onAdd} className="rounded-2xl px-3 py-2 shadow bg-black text-white hover:opacity-90">
+          ➕ 캐릭터 추가
+        </button>
+        <button onClick={onExport} className="rounded-2xl px-3 py-2 shadow bg-white border hover:bg-gray-50">
+          ⬇️ JSON 내보내기
+        </button>
+        <button onClick={onImportClick} className="rounded-2xl px-3 py-2 shadow bg-white border hover:bg-gray-50">
+          ⬆️ JSON 불러오기
+        </button>
+      </div>
+      <p className="text-xs text-slate-500 mt-3">
+        ※ 이미지 URL은 직접 교체하세요. 게임 자산은 저작권 이슈가 있을 수 있습니다.
+      </p>
+    </aside>
+  );
+}
+
+function TierBoard({ groups, mode, onOpen, onSetTier }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="font-semibold">📊 티어 보드 ({MODES.find((m) => m.key === mode)?.label})</h2>
+        <span className="text-sm text-slate-500">카드를 눌러 상세/수정</span>
+      </div>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+        {TIERS.map((t) => (
+          <div key={t} className="rounded-2xl border border-slate-200/60 dark:border-white/10 bg-white/70 dark:bg-white/5">
+            <div className="px-3 py-2 border-b text-sm font-semibold bg-slate-50/60 dark:bg-white/5">
+              {t} Tier
+            </div>
+            <div className="p-2 grid grid-cols-1 gap-2">
+              {groups[t].length === 0 && (
+                <div className="text-sm text-slate-500 px-2 py-3">없음</div>
+              )}
+              {groups[t].map((c) => (
+                <CharCard key={c.id} c={c} onOpen={onOpen} onSetTier={(tier) => onSetTier(c.id, tier)} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CharCard({ c, onOpen, onSetTier }) {
+  return (
+    <div className="rounded-xl overflow-hidden border border-slate-200/60 dark:border-white/10 bg-white/80 dark:bg-white/10 hover:shadow transition">
+      <div className="aspect-[16/9] w-full bg-cover bg-center" style={{ backgroundImage: `url('${c.image}')` }} />
+      <div className="p-2">
+        <div className="flex items-center justify-between gap-2">
+          <button className="font-semibold text-left truncate" onClick={() => onOpen(c.id)}>
+            {c.name} <span className="text-xs text-slate-500">({c.enName})</span>
+          </button>
+          <span className="text-xs rounded-full px-2 py-0.5 border bg-white/60 dark:bg-white/10">
+            {c.element} · {c.path} · {"★".repeat(c.rarity)}
+          </span>
+        </div>
+        <div className="mt-2 flex items-center gap-2 text-sm">
+          {TIERS.map((t) => (
+            <button
+              key={t}
+              onClick={() => onSetTier(t)}
+              className={`px-2 py-1 rounded-lg border text-xs ${
+                (c.tiers?.general || "").includes(t) || (c.tiers?.chaos || "").includes(t) || (c.tiers?.pure || "").includes(t)
+                  ? ""
+                  : ""
+              } hover:bg-slate-100 dark:hover:bg-white/10`}
+              title={`이 캐릭터를 ${t} 티어로 이동`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DetailPanel({ character, onClose, onChange, onRemove }) {
+  if (!character)
+    return (
+      <div>
+        <h3 className="font-semibold mb-2">ℹ️ 상세</h3>
+        <p className="text-sm text-slate-500">왼쪽 카드나 티어보드에서 캐릭터를 선택하세요.</p>
+      </div>
+    );
+
+  const c = character;
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold">ℹ️ 상세/수정</h3>
+        <button onClick={onClose} className="rounded-xl border px-3 py-1 text-sm bg-white hover:bg-gray-50 dark:bg-white/10 dark:hover:bg-white/20">닫기</button>
+      </div>
+
+      <div className="aspect-[16/9] w-full rounded-xl border bg-cover bg-center"
+           style={{ backgroundImage: `url('${c.image}')` }} />
+
+      <div className="grid grid-cols-1 gap-2">
+        <input
+          className="px-3 py-2 rounded-xl border bg-white/80 dark:bg-white/10"
+          value={c.name}
+          onChange={(e) => onChange(c.id, { name: e.target.value })}
+          placeholder="이름"
+        />
+        <input
+          className="px-3 py-2 rounded-xl border bg-white/80 dark:bg-white/10"
+          value={c.enName}
+          onChange={(e) => onChange(c.id, { enName: e.target.value })}
+          placeholder="영문 이름"
+        />
+        <div className="grid grid-cols-2 gap-2">
+          <select
+            className="px-3 py-2 rounded-xl border bg-white/80 dark:bg-white/10"
+            value={c.element}
+            onChange={(e) => onChange(c.id, { element: e.target.value })}
+          >
+            {ELEMENTS.map((el) => (
+              <option key={el} value={el}>
+                {el}
+              </option>
+            ))}
+          </select>
+          <select
+            className="px-3 py-2 rounded-xl border bg-white/80 dark:bg-white/10"
+            value={c.path}
+            onChange={(e) => onChange(c.id, { path: e.target.value })}
+          >
+            {PATHS.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        </div>
+        <select
+          className="px-3 py-2 rounded-xl border bg-white/80 dark:bg-white/10"
+          value={c.rarity}
+          onChange={(e) => onChange(c.id, { rarity: Number(e.target.value) })}
+        >
+          <option value={5}>★★★★★</option>
+          <option value={4}>★★★★</option>
+        </select>
+        <input
+          className="px-3 py-2 rounded-xl border bg-white/80 dark:bg-white/10"
+          value={c.image}
+          onChange={(e) => onChange(c.id, { image: e.target.value })}
+          placeholder="이미지 URL"
+        />
+        <textarea
+          className="px-3 py-2 rounded-xl border bg-white/80 dark:bg-white/10 min-h-[120px]"
+          value={c.description}
+          onChange={(e) => onChange(c.id, { description: e.target.value })}
+          placeholder="소개/팁"
+        />
+
+        <fieldset className="border rounded-xl p-2">
+          <legend className="px-2 text-sm">티어 수정</legend>
+          <div className="grid grid-cols-3 gap-2 text-sm">
+            {MODES.map((m) => (
+              <label key={m.key} className="flex items-center gap-2">
+                <span className="w-20 text-slate-500">{m.label}</span>
+                <select
+                  className="flex-1 px-2 py-1 rounded-lg border bg-white/80 dark:bg-white/10"
+                  value={c.tiers?.[m.key] || "D"}
+                  onChange={(e) => onChange(c.id, { tiers: { ...c.tiers, [m.key]: e.target.value } })}
+                >
+                  {TIERS.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(c.enName + " HSR")}`, "_blank")}
+          className="rounded-2xl px-3 py-2 shadow bg-white border hover:bg-gray-50 dark:bg-white/10 dark:hover:bg-white/20"
+        >
+          🔗 검색으로 더 알아보기
+        </button>
+        <button
+          onClick={() => onRemove(c.id)}
+          className="rounded-2xl px-3 py-2 shadow bg-red-600 text-white hover:opacity-90"
+        >
+          삭제
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="mt-8 text-center text-xs text-slate-500 dark:text-slate-400">
+      <p>
+        이 사이트는 팬메이드 샘플입니다. 게임 및 캐릭터 명칭은 HoYoverse의 상표일 수 있습니다. 데이터는 사용자 기준으로 조정하세요.
+      </p>
+    </footer>
+  );
+}
